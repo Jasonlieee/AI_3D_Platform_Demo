@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI手办平台 - 后台管理系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 登录页 */
+        .login-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .login-card h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 24px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        /* 管理后台主界面 */
+        .admin-header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .admin-header h1 {
+            font-size: 20px;
+            color: #333;
+        }
+        
+        .admin-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        /* 标签页 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            background: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: 0.3s;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .tab:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* 内容区 */
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .content-card.hidden { display: none; }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .card-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+        
+        /* 列表 */
+        .item-list {
+            display: grid;
+            gap: 20px;
+        }
+        
+        .item-card {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            transition: 0.3s;
+            align-items: flex-start;
+        }
+        
+        .item-card:hover {
+            border-color: #667eea;
+        }
+        
+        .item-preview {
+            width: 120px;
+            height: 120px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .item-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-info h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .item-info p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        /* 拖拽排序 */
+        .item-card.dragging {
+            opacity: 0.5;
+            transform: scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .item-card.drag-over {
+            border-top: 3px solid #667eea;
+        }
+
+        .drag-handle {
+            cursor: grab;
+            padding: 8px;
+            color: #999;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .sort-hint {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        /* 图片预览上传 */
+        .img-upload-area {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        
+        .img-upload-area img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .img-upload-area span {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: #333;
+            color: white;
+            border-radius: 8px;
+            display: none;
+            z-index: 2000;
+        }
+        
+        .toast.show {
+            display: block;
+        }
+        
+        .toast.success {
+            background: #10b981;
+        }
+        
+        .toast.error {
+            background: #ef4444;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div id="toast" class="toast"></div>
+    
+    <!-- 登录界面 -->
+    <div id="loginSection" class="login-wrapper">
+        <div class="login-card">
+            <h1>🔐 后台管理系统</h1>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="password" placeholder="请输入密码">
+            </div>
+            <button class="btn btn-primary" onclick="handleLogin()">登录</button>
+        </div>
+    </div>
+    
+    <!-- 管理主界面 -->
+    <div id="adminSection" class="container" style="display: none;">
+        <div class="admin-header">
+            <h1>🎛️ AI手办平台 - 后台管理</h1>
+            <div class="user-info">
+                <span id="adminName">管理员</span>
+                <button class="btn btn-secondary" onclick="handleLogout()">退出</button>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('styles')">风格模版管理</button>
+            <button class="tab" onclick="switchTab('inspirations')">灵感素材管理</button>
+            <button class="tab" onclick="switchTab('library')">素材库管理</button>
+            <button class="tab" onclick="switchTab('tasks')">任务队列</button>
+            <button class="tab" onclick="switchTab('stats')">API调用统计</button>
+            <button class="tab" onclick="switchTab('apiConfigs')">API配置管理</button>
+        </div>
+        
+        <!-- 风格管理 -->
+        <div id="stylesContent" class="content-card">
+            <div class="card-header">
+                <h2>风格模版</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="saveStyleOrder()">💾 保存排序</button>
+                    <button class="btn btn-success" onclick="openCreateStyleModal()">+ 添加风格</button>
+                </div>
+            </div>
+            <p class="sort-hint">👆 拖动左侧手柄来调整顺序，调整后点击「保存排序」</p>
+            <div id="stylesList" class="item-list"></div>
+        </div>
+        
+        <!-- 灵感素材管理 -->
+        <div id="inspirationsContent" class="content-card hidden">
+            <div class="card-header">
+                <h2>灵感素材</h2>
+                <button class="btn btn-success" onclick="openCreateInspirationModal()">+ 添加素材</button>
+            </div>
+            <div id="inspirationsList" class="item-list"></div>
+        </div>
+        
+        <!-- 素材库管理 -->
+        <div id="libraryContent" class="content-card hidden">
+            <div class="card-header">
+                <h2>素材库管理</h2>
+                <button class="btn btn-secondary" onclick="loadLibrary()">🔄 刷新</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">ID</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">用户ID</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">类型</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">预览</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">创建时间</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="libraryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 任务队列 -->
+        <div id="tasksContent" class="content-card hidden">
+            <div class="card-header">
+                <h2>任务队列</h2>
+                <button class="btn btn-secondary" onclick="loadTasks()">🔄 刷新</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">任务ID</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">用户ID</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">类型</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">状态</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">消耗点数</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">创建时间</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">完成时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasksTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- API调用统计 -->
+        <div id="statsContent" class="content-card hidden">
+            <div class="card-header">
+                <h2>API调用统计</h2>
+                <button class="btn btn-secondary" onclick="loadStats()">🔄 刷新</button>
+            </div>
+            
+            <!-- 总统计卡片 -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 25px; border-radius: 12px; color: white;">
+                    <div style="font-size: 14px; opacity: 0.9;">总调用次数</div>
+                    <div style="font-size: 36px; font-weight: bold; margin-top: 10px;" id="totalCalls">0</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 25px; border-radius: 12px; color: white;">
+                    <div style="font-size: 14px; opacity: 0.9;">图像模型调用</div>
+                    <div style="font-size: 36px; font-weight: bold; margin-top: 10px;" id="imageCalls">0</div>
+                </div>
+                <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); padding: 25px; border-radius: 12px; color: white;">
+                    <div style="font-size: 14px; opacity: 0.9;">3D模型调用</div>
+                    <div style="font-size: 36px; font-weight: bold; margin-top: 10px;" id="model3dCalls">0</div>
+                </div>
+            </div>
+            
+            <!-- 图表区域 -->
+            <div style="background: white; padding: 25px; border-radius: 12px;">
+                <h3 style="margin-bottom: 20px; color: #333;">最近14天调用情况</h3>
+                <div style="position: relative; height: 350px; width: 100%;">
+                    <canvas id="statsChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API配置管理 -->
+        <div id="apiConfigsContent" class="content-card hidden">
+            <div class="card-header">
+                <h2>API配置管理</h2>
+                <button class="btn btn-secondary" onclick="loadApiConfigs()">🔄 刷新</button>
+            </div>
+            <p class="sort-hint">⚠️ 修改API配置后需要重启后端才能生效</p>
+            <div id="apiConfigsList" class="item-list"></div>
+        </div>
+    </div>
+    
+    <!-- 风格编辑模态框 -->
+    <div id="styleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="styleModalTitle">添加风格</h2>
+                <button class="close-btn" onclick="closeStyleModal()">&times;</button>
+            </div>
+            <input type="hidden" id="editingStyleId">
+            <div class="form-group">
+                <label>风格ID（英文）</label>
+                <input type="text" id="styleId" placeholder="例如：chibi">
+            </div>
+            <div class="form-group">
+                <label>风格名称</label>
+                <input type="text" id="styleName" placeholder="例如：萌系Q版">
+            </div>
+            <div class="form-group">
+                <label>提示词模版</label>
+                <textarea id="stylePrompt" rows="4" placeholder="请输入提示词模版"></textarea>
+            </div>
+            <div class="form-group">
+                <label>预览图</label>
+                <div class="img-upload-area" onclick="document.getElementById('styleImgInput').click()">
+                    <img id="styleImgPreview" src="" style="display: none;">
+                    <span id="styleImgPlaceholder">点击上传图片</span>
+                </div>
+                <input type="file" id="styleImgInput" style="display: none;" accept="image/*" onchange="handleStyleImgUpload(event)">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeStyleModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveStyle()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 灵感素材编辑模态框 -->
+    <div id="inspirationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="inspModalTitle">添加灵感素材</h2>
+                <button class="close-btn" onclick="closeInspirationModal()">&times;</button>
+            </div>
+            <input type="hidden" id="editingInspId">
+            <div class="form-group">
+                <label>标题 <span style="color: #999; font-size: 12px;">（选填，默认：精选灵感素材）</span></label>
+                <input type="text" id="inspTitle" placeholder="留空将使用默认标题">
+            </div>
+            <div class="form-group">
+                <label>描述 <span style="color: #999; font-size: 12px;">（选填）</span></label>
+                <textarea id="inspContent" rows="3" placeholder="留空将使用默认描述"></textarea>
+            </div>
+            <div class="form-group">
+                <label>图片 <span style="color: #ef4444; font-size: 12px;">（必填）</span></label>
+                <div class="img-upload-area" onclick="document.getElementById('inspImgInput').click()">
+                    <img id="inspImgPreview" src="" style="display: none;">
+                    <span id="inspImgPlaceholder">点击上传图片</span>
+                </div>
+                <input type="file" id="inspImgInput" style="display: none;" accept="image/*" onchange="handleInspImgUpload(event)">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeInspirationModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveInspiration()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API配置编辑模态框 -->
+    <div id="apiConfigModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>编辑API配置</h2>
+                <button class="close-btn" onclick="closeApiConfigModal()">&times;</button>
+            </div>
+            <input type="hidden" id="editingApiId">
+            <div class="form-group">
+                <label>API名称</label>
+                <input type="text" id="apiName" readonly style="background: #f5f5f5;">
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="text" id="apiKey" placeholder="请输入API Key">
+            </div>
+            <div class="form-group">
+                <label>Base URL</label>
+                <input type="text" id="apiBaseUrl" placeholder="请输入Base URL">
+            </div>
+            <div class="form-group">
+                <label>Model Name</label>
+                <input type="text" id="apiModelName" placeholder="请输入Model Name">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeApiConfigModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveApiConfig()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+        let authToken = '';
+        let tempStyleImg = '';
+        let tempInspImg = '';
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast ' + type + ' show';
+            setTimeout(() => { toast.className = 'toast'; }, 3000);
+        }
+
+        async function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    authToken = result.data.token;
+                    localStorage.setItem('adminToken', authToken);
+                    document.getElementById('adminName').textContent = result.data.username;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminSection').style.display = 'block';
+                    loadStyles();
+                    loadInspirations();
+                    loadStats();
+                    loadApiConfigs();
+                    showToast('登录成功！');
+                } else {
+                    showToast(result.message || '登录失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误，请检查后端是否启动', 'error');
+            }
+        }
+
+        function handleLogout() {
+            authToken = '';
+            localStorage.removeItem('adminToken');
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('adminSection').style.display = 'none';
+            showToast('已退出');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('stylesContent').classList.add('hidden');
+            document.getElementById('inspirationsContent').classList.add('hidden');
+            document.getElementById('libraryContent').classList.add('hidden');
+            document.getElementById('tasksContent').classList.add('hidden');
+            document.getElementById('statsContent').classList.add('hidden');
+            document.getElementById('apiConfigsContent').classList.add('hidden');
+            
+            if (tab === 'styles') {
+                document.getElementById('stylesContent').classList.remove('hidden');
+            } else if (tab === 'inspirations') {
+                document.getElementById('inspirationsContent').classList.remove('hidden');
+            } else if (tab === 'library') {
+                document.getElementById('libraryContent').classList.remove('hidden');
+                loadLibrary();
+            } else if (tab === 'tasks') {
+                document.getElementById('tasksContent').classList.remove('hidden');
+                loadTasks();
+            } else if (tab === 'stats') {
+                document.getElementById('statsContent').classList.remove('hidden');
+                loadStats();
+            } else if (tab === 'apiConfigs') {
+                document.getElementById('apiConfigsContent').classList.remove('hidden');
+                loadApiConfigs();
+            }
+        }
+
+        async function loadStyles() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/styles`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    renderStyles(result.data);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        let stylesData = [];
+
+        function renderStyles(styles) {
+            stylesData = styles;
+            const container = document.getElementById('stylesList');
+            container.innerHTML = '';
+
+            styles.forEach((style, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.dataset.styleId = style.id;
+                card.draggable = true;
+
+                card.innerHTML = `
+                    <div class="drag-handle" title="拖动排序">⋮⋮</div>
+                    <div class="item-preview">
+                        <img src="${style.img || 'https://via.placeholder.com/150'}" alt="">
+                    </div>
+                    <div class="item-info">
+                        <h3>${style.name} <span style="font-size: 12px; color: #999;">(${style.id})</span></h3>
+                        <p style="font-size: 13px; color: #666; max-height: 60px; overflow: hidden;">${style.prompt}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" onclick="openEditStyleModal('${style.id}')">编辑</button>
+                        <button class="btn btn-danger" onclick="deleteStyle('${style.id}')">删除</button>
+                    </div>
+                `;
+
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('dragleave', handleDragLeave);
+                card.addEventListener('drop', handleDrop);
+
+                container.appendChild(card);
+            });
+        }
+
+        let draggedCard = null;
+
+        function handleDragStart(e) {
+            draggedCard = e.currentTarget;
+            e.currentTarget.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.currentTarget.outerHTML);
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.item-card').forEach(card => {
+                card.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const card = e.currentTarget;
+            if (card !== draggedCard) {
+                card.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const targetCard = e.currentTarget;
+            if (targetCard === draggedCard) return;
+
+            targetCard.classList.remove('drag-over');
+
+            const container = document.getElementById('stylesList');
+            const cards = Array.from(container.children);
+            const draggedIndex = cards.indexOf(draggedCard);
+            const targetIndex = cards.indexOf(targetCard);
+
+            if (draggedIndex < targetIndex) {
+                targetCard.parentNode.insertBefore(draggedCard, targetCard.nextSibling);
+            } else {
+                targetCard.parentNode.insertBefore(draggedCard, targetCard);
+            }
+
+            // 更新 stylesData 数组顺序
+            const newCards = Array.from(container.children);
+            const newOrder = newCards.map(card => card.dataset.styleId);
+            stylesData = newOrder.map(id => stylesData.find(s => s.id === id));
+        }
+
+        async function saveStyleOrder() {
+            try {
+                const styleIds = stylesData.map(s => s.id);
+                const resp = await fetch(`${API_BASE}/api/styles/reorder`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ style_ids: styleIds })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast('排序保存成功！');
+                    loadStyles();
+                } else {
+                    showToast(result.message || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+                console.error(e);
+            }
+        }
+        
+        let statsChart = null;
+        
+        async function loadStats() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/stats/daily`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    document.getElementById('totalCalls').textContent = result.data.summary.total_calls;
+                    document.getElementById('imageCalls').textContent = result.data.summary.image_calls;
+                    document.getElementById('model3dCalls').textContent = result.data.summary.model3d_calls;
+                    renderChart(result.data.daily);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function renderChart(dailyData) {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            
+            if (statsChart) {
+                statsChart.destroy();
+            }
+            
+            const labels = dailyData.map(d => d.date);
+            const imageCalls = dailyData.map(d => d.image_calls || 0);
+            const model3dCalls = dailyData.map(d => d.model3d_calls || 0);
+            
+            statsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '图像模型调用',
+                            data: imageCalls,
+                            backgroundColor: 'rgba(240, 147, 251, 0.7)',
+                            borderColor: 'rgba(240, 147, 251, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        {
+                            label: '3D模型调用',
+                            data: model3dCalls,
+                            backgroundColor: 'rgba(79, 172, 254, 0.7)',
+                            borderColor: 'rgba(79, 172, 254, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // API配置管理
+        async function loadApiConfigs() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/api-configs`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    renderApiConfigs(result.data);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function renderApiConfigs(configs) {
+            const container = document.getElementById('apiConfigsList');
+            container.innerHTML = '';
+            configs.forEach(config => {
+                const div = document.createElement('div');
+                div.className = 'item-card';
+                div.innerHTML = `
+                    <div class="item-info">
+                        <h3>${config.name}</h3>
+                        <p><strong>API Key:</strong> ${config.api_key}</p>
+                        <p><strong>Base URL:</strong> ${config.base_url}</p>
+                        <p><strong>Model Name:</strong> ${config.model_name}</p>
+                        <p><strong>更新时间:</strong> ${config.updated_at}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" onclick="openEditApiConfigModal('${config.id}')">编辑</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function openEditApiConfigModal(apiId) {
+            if (!confirm('⚠️ 修改API配置需要非常谨慎！修改后需要重启后端才能生效，确定要继续吗？')) {
+                return;
+            }
+            
+            // 读取当前配置
+            fetch(`${API_BASE}/api/admin/api-configs`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            }).then(resp => resp.json()).then(result => {
+                const config = result.data.find(c => c.id === apiId);
+                if (config) {
+                    document.getElementById('editingApiId').value = apiId;
+                    document.getElementById('apiName').value = config.name;
+                    document.getElementById('apiKey').value = config.api_key;
+                    document.getElementById('apiBaseUrl').value = config.base_url;
+                    document.getElementById('apiModelName').value = config.model_name;
+                    document.getElementById('apiConfigModal').classList.add('active');
+                }
+            });
+        }
+        
+        function closeApiConfigModal() {
+            document.getElementById('apiConfigModal').classList.remove('active');
+        }
+        
+        async function saveApiConfig() {
+            const apiId = document.getElementById('editingApiId').value;
+            const apiKey = document.getElementById('apiKey').value;
+            const baseUrl = document.getElementById('apiBaseUrl').value;
+            const modelName = document.getElementById('apiModelName').value;
+            
+            if (!confirm('⚠️ 确定要保存修改吗？修改后需要重启后端才能生效！')) {
+                return;
+            }
+            
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/api-configs/${apiId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        api_key: apiKey,
+                        base_url: baseUrl,
+                        model_name: modelName
+                    })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast('保存成功！请重启后端生效！');
+                    closeApiConfigModal();
+                    loadApiConfigs();
+                } else {
+                    showToast(result.message || '保存失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        function openCreateStyleModal() {
+            document.getElementById('styleModalTitle').textContent = '添加风格';
+            document.getElementById('editingStyleId').value = '';
+            document.getElementById('styleId').value = '';
+            document.getElementById('styleName').value = '';
+            document.getElementById('stylePrompt').value = '';
+            tempStyleImg = '';
+            document.getElementById('styleImgPreview').style.display = 'none';
+            document.getElementById('styleImgPlaceholder').style.display = 'block';
+            document.getElementById('styleModal').classList.add('active');
+        }
+
+        async function openEditStyleModal(styleId) {
+            const resp = await fetch(`${API_BASE}/api/admin/styles`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            const result = await resp.json();
+            const style = result.data.find(s => s.id === styleId);
+            
+            document.getElementById('styleModalTitle').textContent = '编辑风格';
+            document.getElementById('editingStyleId').value = styleId;
+            document.getElementById('styleId').value = style.id;
+            document.getElementById('styleId').disabled = true;
+            document.getElementById('styleName').value = style.name;
+            document.getElementById('stylePrompt').value = style.prompt;
+            tempStyleImg = '';
+            
+            if (style.img) {
+                document.getElementById('styleImgPreview').src = style.img;
+                document.getElementById('styleImgPreview').style.display = 'block';
+                document.getElementById('styleImgPlaceholder').style.display = 'none';
+            } else {
+                document.getElementById('styleImgPreview').style.display = 'none';
+                document.getElementById('styleImgPlaceholder').style.display = 'block';
+            }
+            document.getElementById('styleModal').classList.add('active');
+        }
+
+        function closeStyleModal() {
+            document.getElementById('styleModal').classList.remove('active');
+            document.getElementById('styleId').disabled = false;
+        }
+
+        function handleStyleImgUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    tempStyleImg = e.target.result;
+                    document.getElementById('styleImgPreview').src = tempStyleImg;
+                    document.getElementById('styleImgPreview').style.display = 'block';
+                    document.getElementById('styleImgPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveStyle() {
+            const styleId = document.getElementById('styleId').value;
+            const name = document.getElementById('styleName').value;
+            const prompt = document.getElementById('stylePrompt').value;
+            const editingId = document.getElementById('editingStyleId').value;
+            
+            if (!styleId || !name || !prompt) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+            
+            const url = editingId ? `${API_BASE}/api/admin/styles/${editingId}` : `${API_BASE}/api/admin/styles`;
+            const method = editingId ? 'PUT' : 'POST';
+            
+            try {
+                const resp = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        id: styleId,
+                        name: name,
+                        prompt: prompt,
+                        img: tempStyleImg
+                    })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast(editingId ? '更新成功！' : '创建成功！');
+                    closeStyleModal();
+                    loadStyles();
+                } else {
+                    showToast(result.message || '操作失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        async function deleteStyle(styleId) {
+            if (!confirm('确定要删除这个风格吗？')) return;
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/styles/${styleId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast('删除成功！');
+                    loadStyles();
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        async function loadInspirations() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/inspirations`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    renderInspirations(result.data);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderInspirations(inspirations) {
+            const container = document.getElementById('inspirationsList');
+            container.innerHTML = inspirations.map(insp => `
+                <div class="item-card">
+                    <div class="item-preview">
+                        <img src="${insp.img || 'https://via.placeholder.com/150'}" alt="">
+                    </div>
+                    <div class="item-info">
+                        <h3>${insp.title}</h3>
+                        <p style="font-size: 13px; color: #666;">${insp.content || '暂无描述'}</p>
+                        <p style="font-size: 12px; color: #999; margin-top: 4px;">用户ID: ${insp.user_id || 0}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button class="btn btn-secondary" onclick="openEditInspirationModal(${insp.id})">编辑</button>
+                        <button class="btn btn-danger" onclick="deleteInspiration(${insp.id})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCreateInspirationModal() {
+            document.getElementById('inspModalTitle').textContent = '添加灵感素材';
+            document.getElementById('editingInspId').value = '';
+            document.getElementById('inspTitle').value = '';
+            document.getElementById('inspContent').value = '';
+            tempInspImg = '';
+            document.getElementById('inspImgPreview').style.display = 'none';
+            document.getElementById('inspImgPlaceholder').style.display = 'block';
+            document.getElementById('inspirationModal').classList.add('active');
+        }
+
+        async function openEditInspirationModal(inspId) {
+            const resp = await fetch(`${API_BASE}/api/admin/inspirations`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+            const result = await resp.json();
+            const insp = result.data.find(i => i.id === inspId);
+            
+            document.getElementById('inspModalTitle').textContent = '编辑灵感素材';
+            document.getElementById('editingInspId').value = inspId;
+            document.getElementById('inspTitle').value = insp.title;
+            document.getElementById('inspContent').value = insp.content;
+            tempInspImg = '';
+            
+            if (insp.img) {
+                document.getElementById('inspImgPreview').src = insp.img;
+                document.getElementById('inspImgPreview').style.display = 'block';
+                document.getElementById('inspImgPlaceholder').style.display = 'none';
+            } else {
+                document.getElementById('inspImgPreview').style.display = 'none';
+                document.getElementById('inspImgPlaceholder').style.display = 'block';
+            }
+            document.getElementById('inspirationModal').classList.add('active');
+        }
+
+        function closeInspirationModal() {
+            document.getElementById('inspirationModal').classList.remove('active');
+        }
+
+        function handleInspImgUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    tempInspImg = e.target.result;
+                    document.getElementById('inspImgPreview').src = tempInspImg;
+                    document.getElementById('inspImgPreview').style.display = 'block';
+                    document.getElementById('inspImgPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function saveInspiration() {
+            const title = document.getElementById('inspTitle').value || '精选灵感素材';
+            const content = document.getElementById('inspContent').value || '';
+            const editingId = document.getElementById('editingInspId').value;
+            
+            if (!tempInspImg && !editingId) {
+                showToast('请上传图片', 'error');
+                return;
+            }
+            
+            const url = editingId ? `${API_BASE}/api/admin/inspirations/${editingId}` : `${API_BASE}/api/admin/inspirations`;
+            const method = editingId ? 'PUT' : 'POST';
+            
+            try {
+                const resp = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        img: tempInspImg
+                    })
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast(editingId ? '更新成功！' : '创建成功！');
+                    closeInspirationModal();
+                    loadInspirations();
+                } else {
+                    showToast(result.message || '操作失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        async function loadLibrary() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/library`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    renderLibraryTable(result.data);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderLibraryTable(items) {
+            const tbody = document.getElementById('libraryTableBody');
+            if (!items || items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #999;">暂无素材</td></tr>';
+                return;
+            }
+            tbody.innerHTML = items.map(item => `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px; font-size: 13px;">${item.id}</td>
+                    <td style="padding: 10px; font-size: 13px;">${item.user_id || '-'}</td>
+                    <td style="padding: 10px; font-size: 13px;">${item.asset_type || '2d'}</td>
+                    <td style="padding: 10px;"><img src="${item.img}" style="width: 48px; height: 48px; object-fit: cover; border-radius: 6px;" onerror="this.src='https://via.placeholder.com/48'"></td>
+                    <td style="padding: 10px; font-size: 13px;">${item.date || '-'}</td>
+                    <td style="padding: 10px; font-size: 13px;">-</td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadTasks() {
+            try {
+                const resp = await fetch(`${API_BASE}/api/tasks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    renderTasksTable(result.data || []);
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function renderTasksTable(tasks) {
+            const tbody = document.getElementById('tasksTableBody');
+            if (!tasks || tasks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #999;">暂无任务</td></tr>';
+                return;
+            }
+            const statusMap = { 'processing': '处理中', 'completed': '已完成', 'failed': '失败', 'pending': '等待中' };
+            const statusColorMap = { 'processing': '#f59e0b', 'completed': '#10b981', 'failed': '#ef4444', 'pending': '#6b7280' };
+            const typeMap = { '2d_generation': '2D生成', '3d_generation': '3D生成' };
+            tbody.innerHTML = tasks.map(t => `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 10px; font-size: 13px;">${t.id}</td>
+                    <td style="padding: 10px; font-size: 13px;">${t.user_id || '-'}</td>
+                    <td style="padding: 10px; font-size: 13px;">${typeMap[t.task_type] || t.task_type}</td>
+                    <td style="padding: 10px; font-size: 13px;"><span style="color: ${statusColorMap[t.status] || '#333'};">${statusMap[t.status] || t.status}</span></td>
+                    <td style="padding: 10px; font-size: 13px;">${t.points_cost || 0}</td>
+                    <td style="padding: 10px; font-size: 13px;">${t.created_at ? t.created_at.substring(0, 16) : '-'}</td>
+                    <td style="padding: 10px; font-size: 13px;">${t.completed_at ? t.completed_at.substring(0, 16) : '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteInspiration(inspId) {
+            if (!confirm('确定要删除这个素材吗？')) return;
+            try {
+                const resp = await fetch(`${API_BASE}/api/admin/inspirations/${inspId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const result = await resp.json();
+                if (resp.ok && result.code === 200) {
+                    showToast('删除成功！');
+                    loadInspirations();
+                } else {
+                    showToast(result.message || '删除失败', 'error');
+                }
+            } catch (e) {
+                showToast('网络错误', 'error');
+            }
+        }
+
+        window.onload = () => {
+            const savedToken = localStorage.getItem('adminToken');
+            if (savedToken) {
+                authToken = savedToken;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('adminSection').style.display = 'block';
+                loadStyles();
+                loadInspirations();
+                loadStats();
+                loadApiConfigs();
+            }
+        };
+    </script>
+</body>
+</html>

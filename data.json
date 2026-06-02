@@ -1,0 +1,151 @@
+{
+    "styles_db": [
+        {
+            "id": "chibi",
+            "name": "萌系 Q 版",
+            "prompt": "masterpiece, best quality, chibi figure style, 3d rendering, pure background, (杰作，最高质量，Q版手办风格，3D渲染，纯色背景)",
+            "img": "/static/uploads/styles/af935ba578ed473cb283a6780181e6c2.png"
+        },
+        {
+            "id": "realistic",
+            "name": "写实潮玩风",
+            "prompt": "masterpiece, best quality, popmart style figure, realistic textures, detailed clothes, (杰作，最高质量，潮玩盲盒风格，写实材质，精细服装)",
+            "img": "/static/uploads/styles/ef89cbb9e61f46d8b877aecaf10fbbb5.png"
+        },
+        {
+            "id": "mecha",
+            "name": "赛博机甲风",
+            "prompt": "masterpiece, best quality, mecha armor figure, sci-fi style, metallic reflection, hard surface, (杰作，最高质量，机甲装甲手办，科幻风格，金属反射，硬表面)",
+            "img": "/static/uploads/styles/c46dc802d7b9459986274932b87a6a1c.png"
+        },
+        {
+            "id": "guofeng",
+            "name": "国风手办",
+            "prompt": "基于真人照片转化为国风潮玩手办 IP 形象，从头到脚完整全身立绘，画面完整包含头部、躯干、四肢、双脚，无画面裁切，严格遵循标准 2:3Q 版头身比例，头大身小，躯干短而紧凑，手掌短小圆润，手部长度不超过胯部，杜绝过长、畸形手部，四肢与腿部比例均衡协调；完整提取原图人物发型、五官轮廓、国风传统服饰核心特征并保留，古风新中式汉服，精致传统刺绣纹样，真实古风布料哑光肌理；泡泡玛特黏土软胶手办质感，细腻哑光黏土肌理，柔和暖调商业柔光，人物带有自然腮红，皮克斯风格的美式3d动漫五官；全身正视图，构图端正，白色纯色极简背景，画面干净高级，超高清 8K，细节丰富细腻，真人五官柔和卡通化处理，全身上下比例统一协调",
+            "img": ""
+        }
+    ],
+    "inspirations_db": [
+        {
+            "id": 1779675182,
+            "title": "国风 人像",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/31a3c3c0f6b145cd94e3123623ee0421.png"
+        },
+        {
+            "id": 1779675168,
+            "title": "萤火虫 coser",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/bbeb2206bda845298c150f09c900ea8d.png"
+        },
+        {
+            "id": 1779615128,
+            "title": "城市街道",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/c52075a1239e4781b1809f71fdb06cf2.png"
+        },
+        {
+            "id": 1779591692,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/b15f1a0996774dd7a6539510e847af56.png"
+        },
+        {
+            "id": 1779591587,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/98fe737ca2cb4802bf9dcdbd16ed38be.png"
+        },
+        {
+            "id": 1779591579,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/a71bdaa9216f43debc9c311f361088d4.png"
+        },
+        {
+            "id": 1779591532,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/b13c8d868bf4443eb972562ed8742d4c.png"
+        },
+        {
+            "id": 1779591524,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/24aefc9ffbf5463293bab0478c435696.png"
+        },
+        {
+            "id": 1779591500,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/fbaacd663c4746b2b3b8a664df95627e.jpg"
+        },
+        {
+            "id": 1779591494,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/cbc4063291b1404e815d8760dd84fffd.jpg"
+        },
+        {
+            "id": 1779591479,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/e33107d11c0945aeb40c65faf34fe9c4.png"
+        },
+        {
+            "id": 1779591468,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/7dd2d4d83e784a1c8fb97a0f0b8fb0d7.png"
+        },
+        {
+            "id": 1779591461,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/54d378281c7546e799ee63668b91ff25.jpg"
+        },
+        {
+            "id": 1779591457,
+            "title": "AI 手办分享",
+            "content": "超精细模型直出，Qwen底层加持！",
+            "img": "/static/uploads/inspirations/5f64e822d4124a5abe28936d8eb1a5c8.jpg"
+        }
+    ],
+    "library_db": [
+        {
+            "id": "MDL-4555",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/9812f5b6a8874e0780ae204286cfc548.jpg"
+        },
+        {
+            "id": "MDL-6417",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/647f306784a443c6b41fa5a082c84ac8.jpg"
+        },
+        {
+            "id": "MDL-421",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/a8605064df674537bd7e6bf272b4b15a.png"
+        },
+        {
+            "id": "IMG-3244",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/c5123e5086fe41e4aa649112c369f676.jpg"
+        },
+        {
+            "id": "MDL-3370",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/7f9f8ffcbdc34f1b8812d0126393a134.jpg"
+        },
+        {
+            "id": "MDL-5784",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/b638d5b985b34c8198e27d278e156efc.jpg"
+        },
+        {
+            "id": "MDL-3481",
+            "date": "2026/5/25",
+            "img": "/static/uploads/library/ef0322b0eee24ed4a1cf3e2082971306.png"
+        }
+    ]
+}
