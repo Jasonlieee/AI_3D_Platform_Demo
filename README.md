@@ -35,9 +35,9 @@
 
 | 功能 Feature | 预览 Preview |
 |------|------|
-| 2D 图像生成 2D Generation | ![2D Generation](static/images/placeholder.svg) |
-| 3D 模型预览 3D Preview | ![3D Preview](static/images/placeholder.svg) |
-| 后台管理 Admin Panel | ![Admin Panel](static/images/placeholder.svg) |
+| 2D 图像生成 2D Generation | ![2D Generation](static/images/demo_2d_generation.jpg) |
+| 3D 模型预览 3D Preview | ![3D Preview](static/images/demo_3d_preview.jpg) |
+| 后台管理 Admin Panel | ![Admin Panel](static/images/demo_admin_panel.jpg) |
 
 > 💡 **提示 Tip**：运行项目后访问 http://127.0.0.1:5000 体验完整功能 / Visit after running the project to experience all features
 
