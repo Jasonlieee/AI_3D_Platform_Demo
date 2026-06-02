@@ -155,6 +155,7 @@ def init_db():
             user_id INTEGER NOT NULL,
             img TEXT DEFAULT '',
             model_url TEXT DEFAULT '',
+            preview_url TEXT DEFAULT '',
             asset_type TEXT DEFAULT '2d',
             original_img TEXT DEFAULT '',
             prompt TEXT DEFAULT '',
@@ -321,6 +322,52 @@ def init_db():
     db.commit()
     db.close()
     print("[OK] 数据库初始化完成")
+
+
+def generate_model_preview(model_url, model_id):
+    """生成3D模型预览图（带3D图标的静态图片）"""
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        
+        # 创建预览图目录
+        preview_dir = os.path.join(UPLOAD_FOLDER, 'previews')
+        os.makedirs(preview_dir, exist_ok=True)
+        
+        # 生成预览图文件名
+        preview_name = f"preview_{model_id}.png"
+        preview_path = os.path.join(preview_dir, preview_name)
+        
+        # 创建预览图 (400x400)
+        img = Image.new('RGB', (400, 400), color=(26, 27, 35))
+        draw = ImageDraw.Draw(img)
+        
+        # 绘制3D立方体图标
+        # 立方体正面
+        draw.rectangle([120, 120, 240, 240], outline=(100, 200, 255), width=3)
+        # 立方体顶面
+        draw.polygon([(120, 120), (160, 80), (280, 80), (240, 120)], outline=(100, 200, 255))
+        # 立方体右面
+        draw.polygon([(240, 120), (280, 80), (280, 200), (240, 240)], outline=(100, 200, 255))
+        
+        # 绘制文字
+        try:
+            font = ImageFont.truetype("arial.ttf", 20)
+        except:
+            font = ImageFont.load_default()
+        
+        draw.text((160, 280), "3D Model", fill=(150, 150, 150), font=font)
+        draw.text((140, 320), "Click to view", fill=(100, 100, 100), font=font)
+        
+        # 保存预览图
+        img.save(preview_path, 'PNG')
+        print(f"[OK] 预览图已生成: {preview_path}")
+        
+        # 返回相对URL
+        return f"/static/uploads/previews/{preview_name}"
+        
+    except Exception as e:
+        print(f"[ERROR] 生成预览图失败: {e}")
+        return None
 
 
 def generate_token(user_id, username, role):
@@ -710,13 +757,47 @@ def handle_library():
                     db.commit()
                     img = img_url
                     print(f"[INFO] 外部图片已下载并保存: {img_url}")
+            # 修复MDL记录：如果img是placeholder或无效，尝试用original_img替换
+            original_img = r['original_img'] if 'original_img' in r.keys() else ''
+            if r['id'].startswith('MDL-') and (not img or img == '/static/images/placeholder.svg' or 'tos-cn-beijing.volces.com' in (img or '')):
+                if original_img and original_img.startswith('/static/'):
+                    db.execute("UPDATE library SET img = ? WHERE id = ?", (original_img, r['id']))
+                    db.commit()
+                    img = original_img
+                    print(f"[INFO] MDL记录 {r['id']} 的img已修复为original_img: {img}")
+            model_url_val = r['model_url'] if 'model_url' in r.keys() else ''
+            preview_url_val = r['preview_url'] if 'preview_url' in r.keys() else ''
+            prompt_val = r['prompt'] if 'prompt' in r.keys() else ''
+            style_id_val = r['style_id'] if 'style_id' in r.keys() else ''
+            asset_type_val = r['asset_type'] if 'asset_type' in r.keys() else '2d'
+
+            tags = []
+            is_mdl = r['id'].startswith('MDL-')
+            if is_mdl and model_url_val:
+                tags.append({'label': '3D模型', 'type': 'model'})
+                lower_url = model_url_val.lower()
+                if lower_url.endswith('.glb') or lower_url.endswith('.gltf'):
+                    tags.append({'label': 'GLB', 'type': 'format-glb'})
+                elif lower_url.endswith('.obj'):
+                    tags.append({'label': 'OBJ', 'type': 'format-obj'})
+            elif asset_type_val == '3d':
+                tags.append({'label': '3D模型', 'type': 'model'})
+            else:
+                tags.append({'label': '2D图片', 'type': '2d'})
+            if prompt_val or style_id_val:
+                tags.append({'label': 'AI生成', 'type': 'ai'})
+            if preview_url_val:
+                tags.append({'label': '有预览', 'type': 'preview'})
+
             data.append({'id': r['id'], 'user_id': r['user_id'],
                         'date': r['created_at'][:10] if r['created_at'] else '', 
-                        'img': img, 'asset_type': r['asset_type'],
-                        'original_img': r['original_img'], 'prompt': r['prompt'],
+                        'img': img, 'asset_type': asset_type_val,
+                        'original_img': r['original_img'], 'prompt': prompt_val,
                         'task_id': r['task_id'] if 'task_id' in r.keys() else '',
-                        'style_id': r['style_id'] if 'style_id' in r.keys() else '',
-                        'model_url': r['model_url'] if 'model_url' in r.keys() else ''})
+                        'style_id': style_id_val,
+                        'model_url': model_url_val,
+                        'preview_url': preview_url_val,
+                        'tags': tags})
         print(f"[INFO] 返回 {len(data)} 个素材库项目")
         for item in data[:2]:
             print(f"  - {item['id']}: {item['img']}")
@@ -729,9 +810,10 @@ def handle_library():
         task_id = body.get('task_id', '')
         style_id = body.get('style_id', '')
         model_url = body.get('model_url', '')
+        preview_url = body.get('preview_url', '')
         
         print(f"[INFO] 素材入库: id={body.get('id')}, img_type={type(img_input)}, img_start={img_input[:80] if img_input else 'empty'}")
-        print(f"[INFO] 原图: {original_img}, 提示词: {prompt[:50] if prompt else '无'}, 任务ID: {task_id}, 风格ID: {style_id}, 模型URL: {model_url}")
+        print(f"[INFO] 原图: {original_img}, 提示词: {prompt[:50] if prompt else '无'}, 任务ID: {task_id}, 风格ID: {style_id}, 模型URL: {model_url}, 预览URL: {preview_url}")
         
         img_url = ""
         # 如果是本地URL，直接使用
@@ -754,9 +836,13 @@ def handle_library():
         item_id = body.get('id', f"MDL-{int(time.time())}")
         asset_type = '2d' if item_id.startswith('IMG-') else '3d'
         
-        # 保存所有字段，包括原图、提示词、任务ID、风格ID和模型URL
-        db.execute("INSERT OR REPLACE INTO library (id, user_id, img, asset_type, original_img, prompt, task_id, style_id, model_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  (item_id, request.user['user_id'], img_url, asset_type, original_img, prompt, task_id, style_id, model_url))
+        # 如果是3D模型且没有预览图，生成一个
+        if asset_type == '3d' and model_url and not preview_url:
+            preview_url = generate_model_preview(model_url, item_id)
+        
+        # 保存所有字段，包括原图、提示词、任务ID、风格ID、模型URL和预览URL
+        db.execute("INSERT OR REPLACE INTO library (id, user_id, img, asset_type, original_img, prompt, task_id, style_id, model_url, preview_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  (item_id, request.user['user_id'], img_url, asset_type, original_img, prompt, task_id, style_id, model_url, preview_url))
         db.commit()
         print(f"[OK] 素材入库成功: {item_id} -> {img_url}")
         return jsonify({'code': 200, 'message': '素材入库成功', 'data': {'id': item_id}})
@@ -1112,8 +1198,11 @@ def generate_3d():
             new_points = db.execute("SELECT compute_points FROM users WHERE id = ?", (request.user['user_id'],)).fetchone()
             return jsonify({'code': 500, 'message': error, 'data': {'img': img_url, 'task_id': task_id, 'remaining_points': new_points['compute_points']}})
         
+        # 生成预览图
+        preview_url = generate_model_preview(model_url, task_id)
+        
         # 更新任务状态
-        result_data = {'img': img_url, 'model_url': model_url, 'model_format': 'glb'}
+        result_data = {'img': img_url, 'model_url': model_url, 'model_format': 'glb', 'preview_url': preview_url}
         db.execute("UPDATE tasks SET status = 'completed', result_data = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
                   (json.dumps(result_data), task_id))
         db.commit()
@@ -1127,6 +1216,7 @@ def generate_3d():
             'data': {
                 'img': img_url,
                 'model_url': model_url,
+                'preview_url': preview_url,
                 'task_id': task_id,
                 'remaining_points': new_points['compute_points']
             }

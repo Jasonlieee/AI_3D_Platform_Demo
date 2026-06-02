@@ -19,6 +19,7 @@ venv.bak/
 static/uploads/inspirations/*
 static/uploads/library/*
 static/uploads/models/*
+static/uploads/previews/*
 static/uploads/styles/*
 !static/uploads/.gitkeep
 
