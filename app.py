@@ -270,11 +270,11 @@ def init_db():
     for s in default_styles:
         db.execute("INSERT OR IGNORE INTO styles (id, name, prompt, img) VALUES (?, ?, ?, ?)", s)
     
-    # 初始化API配置
+    # 初始化API配置 (请在后台管理页面填入您的API密钥)
     default_apis = [
-        ('jimo', '即梦4.5', 'ark-c416a9c5-5283-4b84-90e2-70f3386000df-8f19b', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-seedream-4-5-251128'),
-        ('mimo', 'Mimo V2.5', 'tp-ch604z7qbl62qnyrluygpn5519rqrylt0kzhzrvgltxb24f9', 'https://token-plan-cn.xiaomimimo.com/v1', 'mimo-v2.5'),
-        ('seed3d', 'Doubao-Seed3D-2.0', 'ark-c416a9c5-5283-4b84-90e2-70f3386000df-8f19b', 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks', 'doubao-seed3d-2-0-260328')
+        ('jimo', '即梦4.5', 'YOUR_JIMO_API_KEY', 'https://ark.cn-beijing.volces.com/api/v3', 'doubao-seedream-4-5-251128'),
+        ('mimo', 'Mimo V2.5', 'YOUR_MIMO_API_KEY', 'https://token-plan-cn.xiaomimimo.com/v1', 'mimo-v2.5'),
+        ('seed3d', 'Doubao-Seed3D-2.0', 'YOUR_SEED3D_API_KEY', 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks', 'doubao-seed3d-2-0-260328')
     ]
     for api in default_apis:
         db.execute("INSERT OR IGNORE INTO api_config (id, name, api_key, base_url, model_name) VALUES (?, ?, ?, ?, ?)", api)
@@ -1240,22 +1240,22 @@ def get_api_config(api_id):
             }
     except Exception as e:
         print(f"[ERROR] 读取API配置失败: {e}")
-    # 回退到默认值
+    # 回退到默认值 (请设置环境变量或在后台管理页面配置)
     if api_id == 'mimo':
         return {
-            'api_key': os.environ.get('MIMO_API_KEY', 'tp-ch604z7qbl62qnyrluygpn5519rqrylt0kzhzrvgltxb24f9'),
+            'api_key': os.environ.get('MIMO_API_KEY', ''),
             'base_url': 'https://token-plan-cn.xiaomimimo.com/v1',
             'model_name': 'mimo-v2.5'
         }
     elif api_id == 'jimo':
         return {
-            'api_key': os.environ.get('JIMO_API_KEY', 'ark-c416a9c5-5283-4b84-90e2-70f3386000df-8f19b'),
+            'api_key': os.environ.get('JIMO_API_KEY', ''),
             'base_url': 'https://ark.cn-beijing.volces.com/api/v3',
             'model_name': 'doubao-seedream-4-5-251128'
         }
     elif api_id == 'seed3d':
         return {
-            'api_key': os.environ.get('SEED3D_API_KEY', 'ark-c416a9c5-5283-4b84-90e2-70f3386000df-8f19b'),
+            'api_key': os.environ.get('SEED3D_API_KEY', ''),
             'base_url': 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks',
             'model_name': 'doubao-seed3d-2-0-260328'
         }
@@ -1270,8 +1270,8 @@ def upload_to_imgbb(image_data):
         import base64
         import tempfile
         
-        # ImgBB API密钥（免费密钥，可正常使用）
-        IMGBB_API_KEY = "a512b94e3fa9014106a595e4d767290d"
+        # ImgBB API密钥 (请到 https://api.imgbb.com/ 获取免费密钥)
+        IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY', 'YOUR_IMGBB_API_KEY')
         
         print(f"[INFO] 正在上传图片到ImgBB图床...")
         
