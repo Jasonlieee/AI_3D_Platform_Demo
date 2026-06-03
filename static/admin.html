@@ -469,6 +469,7 @@
                             <th style="padding: 12px; text-align: left; font-weight: 600;">类型</th>
                             <th style="padding: 12px; text-align: left; font-weight: 600;">状态</th>
                             <th style="padding: 12px; text-align: left; font-weight: 600;">消耗点数</th>
+                            <th style="padding: 12px; text-align: left; font-weight: 600;">生成消耗时间</th>
                             <th style="padding: 12px; text-align: left; font-weight: 600;">创建时间</th>
                             <th style="padding: 12px; text-align: left; font-weight: 600;">完成时间</th>
                         </tr>
@@ -1290,12 +1291,29 @@
         function renderTasksTable(tasks) {
             const tbody = document.getElementById('tasksTableBody');
             if (!tasks || tasks.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="padding: 20px; text-align: center; color: #999;">暂无任务</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="padding: 20px; text-align: center; color: #999;">暂无任务</td></tr>';
                 return;
             }
             const statusMap = { 'processing': '处理中', 'completed': '已完成', 'failed': '失败', 'pending': '等待中' };
             const statusColorMap = { 'processing': '#f59e0b', 'completed': '#10b981', 'failed': '#ef4444', 'pending': '#6b7280' };
             const typeMap = { '2d_generation': '2D生成', '3d_generation': '3D生成' };
+            
+            function calculateDuration(createdAt, completedAt) {
+                if (!createdAt || !completedAt) return '-';
+                const start = new Date(createdAt);
+                const end = new Date(completedAt);
+                const diffMs = end - start;
+                if (diffMs < 0) return '-';
+                const diffSec = Math.floor(diffMs / 1000);
+                if (diffSec < 60) return `${diffSec}秒`;
+                const diffMin = Math.floor(diffSec / 60);
+                const remainSec = diffSec % 60;
+                if (diffMin < 60) return `${diffMin}分${remainSec}秒`;
+                const diffHour = Math.floor(diffMin / 60);
+                const remainMin = diffMin % 60;
+                return `${diffHour}时${remainMin}分`;
+            }
+            
             tbody.innerHTML = tasks.map(t => `
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 10px; font-size: 13px;">${t.id}</td>
@@ -1303,6 +1321,7 @@
                     <td style="padding: 10px; font-size: 13px;">${typeMap[t.task_type] || t.task_type}</td>
                     <td style="padding: 10px; font-size: 13px;"><span style="color: ${statusColorMap[t.status] || '#333'};">${statusMap[t.status] || t.status}</span></td>
                     <td style="padding: 10px; font-size: 13px;">${t.points_cost || 0}</td>
+                    <td style="padding: 10px; font-size: 13px; color: ${t.status === 'completed' ? '#10b981' : '#999'};">${calculateDuration(t.created_at, t.completed_at)}</td>
                     <td style="padding: 10px; font-size: 13px;">${t.created_at ? t.created_at.substring(0, 16) : '-'}</td>
                     <td style="padding: 10px; font-size: 13px;">${t.completed_at ? t.completed_at.substring(0, 16) : '-'}</td>
                 </tr>

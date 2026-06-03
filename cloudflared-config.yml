@@ -1,0 +1,13 @@
+# Cloudflare Tunnel 配置文件
+# 将此文件复制到 %USERPROFILE%\.cloudflared\config.yml
+# 并替换 <TUNNEL_ID>
+
+tunnel: b5b34333-aafc-4396-9a1f-ff902c55e867
+credentials-file: C:\Users\ZhuanZ\.cloudflared\b5b34333-aafc-4396-9a1f-ff902c55e867.json
+
+ingress:
+  # 平台子域名
+  - hostname: platform.JasonLee0712.com
+    service: http://localhost:5000
+  # 默认规则（必须放在最后）
+  - service: http_status:404

@@ -35,20 +35,13 @@ def is_local_request():
 
 @app.before_request
 def restrict_admin_access():
-    """后台管理路由仅允许本地访问"""
-    path = request.path
     # 限制后台管理相关路由（API + 页面）
     # /admin 和 /admin.html 是后台页面
     # /api/admin/* 是后台API
     # /static/admin.html 是后台页面文件
-    is_admin_path = (
-        path == '/admin' or 
-        path == '/admin.html' or
-        path.startswith('/api/admin/') or
-        path == '/static/admin.html'
-    )
-    if is_admin_path and not is_local_request():
-        return jsonify({'code': 403, 'message': '后台管理仅允许本地访问'}), 403
+    # 注意：通过Cloudflare Tunnel访问时，请求IP不是本地IP
+    # 为了允许公网访问后台管理，已移除本地访问限制
+    pass
 
 
 def get_db():
@@ -124,14 +117,14 @@ def init_db():
             password_hash TEXT NOT NULL,
             role TEXT DEFAULT 'user',
             compute_points INTEGER DEFAULT 10000,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours'))
         );
 
         CREATE TABLE IF NOT EXISTS admins (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours'))
         );
 
         CREATE TABLE IF NOT EXISTS styles (
@@ -147,7 +140,7 @@ def init_db():
             title TEXT NOT NULL,
             content TEXT DEFAULT '',
             img TEXT DEFAULT '',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours'))
         );
 
         CREATE TABLE IF NOT EXISTS library (
@@ -159,7 +152,7 @@ def init_db():
             asset_type TEXT DEFAULT '2d',
             original_img TEXT DEFAULT '',
             prompt TEXT DEFAULT '',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours')),
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
@@ -172,7 +165,7 @@ def init_db():
             scopes TEXT DEFAULT '[]',
             is_active INTEGER DEFAULT 1,
             last_used_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours')),
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
 
@@ -184,7 +177,7 @@ def init_db():
             input_data TEXT DEFAULT '{}',
             result_data TEXT DEFAULT '{}',
             points_cost INTEGER DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours')),
             completed_at TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
@@ -195,7 +188,7 @@ def init_db():
             api_type TEXT NOT NULL,
             params TEXT DEFAULT '{}',
             status TEXT DEFAULT 'success',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT (datetime('now', '+8 hours')),
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
         
@@ -205,7 +198,7 @@ def init_db():
             api_key TEXT DEFAULT '',
             base_url TEXT DEFAULT '',
             model_name TEXT DEFAULT '',
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            updated_at TIMESTAMP DEFAULT (datetime('now', '+8 hours'))
         );
     """)
     
@@ -307,10 +300,10 @@ def init_db():
         stuck_tasks = db.execute("""
             SELECT id, user_id, points_cost FROM tasks 
             WHERE status = 'processing' 
-            AND datetime(created_at, '+30 minutes') < datetime('now')
+            AND datetime(created_at, '+30 minutes') < datetime('now', '+8 hours')
         """).fetchall()
         for task in stuck_tasks:
-            db.execute("UPDATE tasks SET status = 'failed', error_message = '任务因超时被自动清理', completed_at = CURRENT_TIMESTAMP WHERE id = ?", (task[0],))
+            db.execute("UPDATE tasks SET status = 'failed', error_message = '任务因超时被自动清理', completed_at = datetime('now', '+8 hours') WHERE id = ?", (task[0],))
             if task[2] > 0:
                 db.execute("UPDATE users SET compute_points = compute_points + ? WHERE id = ?", (task[2], task[1]))
             print(f"[INFO] 已清理超时任务 ID: {task[0]}，退还 {task[2]} 算力点")
@@ -715,7 +708,7 @@ def update_api_config(api_id):
     # 更新数据库
     db.execute("""
         UPDATE api_config 
-        SET api_key = ?, base_url = ?, model_name = ?, updated_at = CURRENT_TIMESTAMP 
+        SET api_key = ?, base_url = ?, model_name = ?, updated_at = datetime('now', '+8 hours') 
         WHERE id = ?
     """, (data['api_key'], data['base_url'], data['model_name'], api_id))
     db.commit()
@@ -1111,7 +1104,7 @@ def generate_2d():
         log_api_call(request.user['user_id'], '2d_generation', params={'style_id': style_id}, status='failed')
         # 如果API调用失败，更新任务状态并返回错误
         result_data = {'original_img': original_img_url} if original_img_url else {}
-        db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+        db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = datetime('now', '+8 hours') WHERE id = ?",
                    (json.dumps(result_data), error, task_id))
         db.commit()
         # 退还算力点
@@ -1142,7 +1135,7 @@ def generate_2d():
     result_data = {'img': generated_img_url}
     if original_img_url:
         result_data['original_img'] = original_img_url
-    db.execute("UPDATE tasks SET status = 'completed', result_data = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+    db.execute("UPDATE tasks SET status = 'completed', result_data = ?, completed_at = datetime('now', '+8 hours') WHERE id = ?",
                (json.dumps(result_data), task_id))
     db.commit()
     
@@ -1188,7 +1181,7 @@ def generate_3d():
         
         if error:
             # API调用失败
-            db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+            db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = datetime('now', '+8 hours') WHERE id = ?",
                       (json.dumps({'img': img_url}), error, task_id))
             db.commit()
             # 退还算力点
@@ -1203,7 +1196,7 @@ def generate_3d():
         
         # 更新任务状态
         result_data = {'img': img_url, 'model_url': model_url, 'model_format': 'glb', 'preview_url': preview_url}
-        db.execute("UPDATE tasks SET status = 'completed', result_data = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+        db.execute("UPDATE tasks SET status = 'completed', result_data = ?, completed_at = datetime('now', '+8 hours') WHERE id = ?",
                   (json.dumps(result_data), task_id))
         db.commit()
         
@@ -1223,7 +1216,7 @@ def generate_3d():
         })
         
     except Exception as e:
-        db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = CURRENT_TIMESTAMP WHERE id = ?",
+        db.execute("UPDATE tasks SET status = 'failed', result_data = ?, error_message = ?, completed_at = datetime('now', '+8 hours') WHERE id = ?",
                   (json.dumps({'img': img_url}), str(e), task_id))
         db.commit()
         # 退还算力点
@@ -1788,8 +1781,11 @@ def agent_chat():
         {"role": "user", "content": message}
     ]
     
-    # 如果没有配置 API Key，使用原来的关键词匹配
-    if not MIMO_API_KEY:
+    # 检查是否配置了 Mimo API
+    mimo_config = get_api_config('mimo')
+    
+    if not mimo_config or not mimo_config['api_key']:
+        # 如果没有配置 API Key，使用关键词匹配
         reply = f"已收到您的指令：「{message}」。Agent 正在分析上下文并准备执行操作。"
         if 'reedit' in message.lower() or '编辑' in message:
             reply = "好的，我已将该素材设为 Control 图。请上传 Target 图或输入文本描述，我将执行 AI Edit 结构转换。"
